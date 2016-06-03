@@ -1,15 +1,3 @@
-use std::io;
-use std::io::Read;
-use std::io::prelude;
-use std::str;
-use nom::{not_line_ending,line_ending};
-use nom::IResult;
-use std::fs::{OpenOptions, File};
-
-#[derive(Debug)]
-pub struct Cpuinfo<'a> {
-    pub field: Option<&'a str>,
-    pub value: Option<Vec<&'a str>>,
 }
 
 impl<'a> Cpuinfo<'a> {
@@ -25,11 +13,9 @@ impl<'a> Cpuinfo<'a> {
         let mut rtv = Vec::new();
         input.read_to_end(&mut rtv);
         match Cpuinfo::parse_cpuinfo(rtv.as_slice()) {
-            IResult::Done(_,o) => {
-                print!("{:?}", o);
+            IResult::Done(a,o) => {
                 for o in o {
-                    println!("{:?}", o.field);
-                    println!("{:?}", o.value);
+                    println!("{:?}", o);
                 }
             }
             _                  => panic!("Error")
@@ -39,8 +25,8 @@ impl<'a> Cpuinfo<'a> {
     fn parse_cpuinfo(input:&[u8]) -> IResult<&[u8],Vec<Cpuinfo>> {
         many0!(input,
                chain!(
-                   field: map_res!( is_not!("\t"), str::from_utf8) ~
-                   value: many0!(terminated!(map_res!( tag!(": "), str::from_utf8), tag!("\n"))),
+                   field: map_res!(take_until_either!("\t"), str::from_utf8) ~
+                   value: map_res!(take_until_either!("\n"), str::from_utf8) ~ line_ending,
                    ||{
                        Cpuinfo {
                            field: Some(field),
