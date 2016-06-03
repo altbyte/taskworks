@@ -37,7 +37,8 @@ impl<'a> Cpuinfo<'a> {
         many0!(input,
                chain!(
                    field: map_res!(take_until_either!("\t"), str::from_utf8) ~
-                   value: map_res!(take_until_either!("\n"), str::from_utf8) ~ line_ending,
+                   take_until_and_consume!(": ") ~
+                   value: map_res!( not_line_ending , str::from_utf8) ~ line_ending,
                    ||{
                        Cpuinfo {
                            field: Some(field),
