@@ -1,3 +1,14 @@
+use std::io;
+use std::io::Read;
+use std::io::prelude;
+use std::str;
+use nom::*;
+use std::fs::{OpenOptions, File};
+
+#[derive(Debug)]
+pub struct Cpuinfo<'a> {
+    pub field: Option<&'a str>,
+    pub value: Option<&'a str>,
 }
 
 impl<'a> Cpuinfo<'a> {
